@@ -6,6 +6,8 @@ import "./taskList.css";
 function TaskList() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editedTitle, setEditedTitle] = useState("");
   const navigate = useNavigate();
 
   const fetchTasks = async () => {
@@ -35,6 +37,14 @@ function TaskList() {
 
   const deleteTask = async (id) => {
     await API.delete(`/tasks/${id}`);
+    fetchTasks();
+  };
+
+  const updateTaskTitle = async (id) => {
+    if (!editedTitle.trim()) return;
+    await API.put(`/tasks/${id}`, { title: editedTitle });
+    setEditingTaskId(null);
+    setEditedTitle("");
     fetchTasks();
   };
 
@@ -70,38 +80,75 @@ function TaskList() {
       </div>
 
       {/* Incomplete Tasks */}
-      {incompleteTasks.length > 0 && (
-        <>
-          <h4>Incomplete Tasks</h4>
-          <ul className="list-group mb-4">
-            {incompleteTasks.map((task, index) => (
-              <li
-                key={task._id}
-                className="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-2 px-3 py-2"
-              >
-                <span className="mb-2 mb-sm-0 d-flex align-items-center">
-                  <span className="task-number">{index + 1}</span>
-                  {task.title}
-                </span>
-                <div className="d-flex gap-2 task-buttons">
-                  <button
-                    className="btn btn-sm btn-success"
-                    onClick={() => toggleTask(task._id, task.completed)}
-                  >
-                    Complete
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger "
-                    onClick={() => deleteTask(task._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      {incompleteTasks.map((task, index) => (
+  <li
+    key={task._id}
+    className="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-2 px-3 py-2"
+  >
+    {editingTaskId === task._id ? (
+      <div className="d-flex flex-column flex-sm-row w-100 gap-2">
+        <input
+          className="form-control"
+          value={editedTitle}
+          onChange={(e) => setEditedTitle(e.target.value)}
+        />
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-sm btn-success"
+            onClick={() => updateTaskTitle(task._id)}
+          >
+            Save
+          </button>
+          <button
+            className="btn btn-sm btn-secondary"
+            onClick={() => {
+              setEditingTaskId(null);
+              setEditedTitle("");
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ) : (
+      <>
+        {/* Left Side: Title + Edit Button */}
+        <div className="d-flex align-items-center gap-2 flex-grow-1">
+          <span className="task-number">{index + 1}.</span>
+          <span>{task.title}</span>
+          <button
+            className="btn btn-sm btn-outline-info ms-3 edit-btn"
+            onClick={() => {
+              setEditingTaskId(task._id);
+              setEditedTitle(task.title);
+            }}
+          >
+            
+            Edit
+            <i class="fa-solid fa-pen mx-1"></i>
+          </button>
+        </div>
+
+        {/* Right Side: Complete & Delete */}
+        <div className="d-flex gap-2 mt-2 mt-sm-0">
+          <button
+            className="btn btn-sm btn-success"
+            onClick={() => toggleTask(task._id, task.completed)}
+          >
+            Complete
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => deleteTask(task._id)}
+          >
+            Delete
+          </button>
+        </div>
+      </>
+    )}
+  </li>
+))}
+
 
       {/* Completed Tasks */}
       {completedTasks.length > 0 && (
@@ -121,13 +168,13 @@ function TaskList() {
                 </span>
                 <div className="d-flex gap-2">
                   <button
-                    className="btn btn-sm btn-warning px-2 py-2 "
+                    className="btn btn-sm btn-warning"
                     onClick={() => toggleTask(task._id, task.completed)}
                   >
                     Undo Task
                   </button>
                   <button
-                    className="btn btn-sm btn-danger px-4"
+                    className="btn btn-sm btn-danger"
                     onClick={() => deleteTask(task._id)}
                   >
                     Delete

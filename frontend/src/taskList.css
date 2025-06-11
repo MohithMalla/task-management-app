@@ -78,3 +78,17 @@ input.form-control:focus {
 .logout-btn:hover {
   background-color: #5a6268;
 }
+.edit-btn{
+font-weight: 500;
+color:  #0d6cf0;
+border: 0.3px solid #0d6cf0;
+}
+
+.edit-btn:hover {
+  color: white !important;
+  background-color: #0d6cf0 !important;
+  border: 0.2px solid white;
+  
+}
+
+
